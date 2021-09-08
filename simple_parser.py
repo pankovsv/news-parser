@@ -31,7 +31,6 @@ db.generate_mapping(create_tables=True)
 def write_db(date, news, link):
     for r in News.select(lambda p: p.link == link):
         if link == r.link:
-            print("такая запись уже существует")
             log.warning(f"запись '{news}' не добавлена, т.к. уже присутствует в базе")
             break
     else:
@@ -41,10 +40,7 @@ def write_db(date, news, link):
 
 @db_session
 def get_news_count_from_db(date):
-    # news_count = len(News.select(lambda p: p.date == date)[:])
-    print(type(News))
     news_count = count(n for n in News if n.date == date)
-    print(news_count)
     return news_count
 
 
@@ -59,9 +55,11 @@ def exist_news(date):
     exist_or_not = News.exists(date=date)
     return exist_or_not
 
+
 @db_session
 def delete_news(date):
     News.select(date=date).delete()
+
 
 def get_news_from_db(date):
     ltxt.delete("1.0", END)
@@ -107,9 +105,12 @@ def click_parse():
 def click_read_db():
     day = day_entry.get()
     month = month_entry.get()
-    date = day + "/" + month + "/" + "2021"
-    print(f"date_read {date}")
-    get_news_from_db(date=date)
+    if day:
+        date = day + "/" + month + "/" + "2021"
+        get_news_from_db(date=date)
+    else:
+        ltxt.delete("1.0", END)
+        ltxt.insert(INSERT, f"Некорректная дата")
 
 
 window = Tk()
